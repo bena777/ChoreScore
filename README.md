@@ -8,7 +8,7 @@ Install dependencies:
 npm install
 ```
 
-Run frontend (dev build, will auto-refresh):
+Run frontend (dev build, will auto-refresh):  
 In a new terminal,
 ```bash
 cd client
@@ -16,7 +16,7 @@ npm run dev
 ```
 * Open http://localhost:5173/ on any local web browser
 
-Run backend (dev build, will auto-refresh):
+Run backend (dev build, will auto-refresh):  
 In a new terminal,
 ```bash
 cd server
