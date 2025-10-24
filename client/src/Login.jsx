@@ -1,20 +1,39 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
-function Login() {
+function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username || !password){
-        setError('Must input both username AND password');
-        return;
+    if (!username || !password) {
+      setError('Must input both username AND password');
+      return;
     }
-    console.log('Logged in with', { username, password})
-    setUsername('');
-    setPassword('');
-  }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
+      setError('');
+      setUsername('');
+      setPassword('');
+      onLoginSuccess(); // Notify parent App
+    } catch (err) {
+      setError("Server error — could not connect to backend");
+    }
+  };
 
   return (
     <div className="login-container">
