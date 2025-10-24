@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from "react";
 
-function Login({ onLoginSuccess }) {
+
+function Login({ onLoginSuccess, onShowRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -29,7 +30,7 @@ function Login({ onLoginSuccess }) {
       setError('');
       setUsername('');
       setPassword('');
-      onLoginSuccess(); // Notify parent App
+      onLoginSuccess();
     } catch (err) {
       setError("Server error — could not connect to backend");
     }
@@ -64,6 +65,9 @@ function Login({ onLoginSuccess }) {
         </div>
         <button type="submit">Login</button>
       </form>
+      <button onClick={onShowRegister} style={{ marginTop: "10px" }}>
+        Create Account
+      </button>
     </div>
   );
 }

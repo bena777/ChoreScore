@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import Login from "./Login"; // 👈 import your Login component
+import Login from "./Login";
+import Register from "./Register";
 import "./App.css";
 
 function App() {
   const [message, setMessage] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const [showRegister, setShowRegister] = useState(false);
   useEffect(() => {
     if (isLoggedIn) {
       fetch("http://localhost:5000/api")
@@ -14,10 +15,20 @@ function App() {
         .catch((err) => console.log("Server not running yet"));
     }
   }, [isLoggedIn]);
-  return (
+ return (
     <div className="container">
       {!isLoggedIn ? (
-        <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+        showRegister ? (
+          <Register
+            onRegisterSuccess={() => setShowRegister(false)}
+            onBackToLogin={() => setShowRegister(false)}
+          />
+        ) : (
+          <Login
+            onLoginSuccess={() => setIsLoggedIn(true)}
+            onShowRegister={() => setShowRegister(true)}
+          />
+        )
       ) : (
         <>
           <h1>ChoreScore</h1>
@@ -33,5 +44,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
