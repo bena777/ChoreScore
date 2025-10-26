@@ -1,50 +1,39 @@
 import React, { useState } from "react";
-
+import { api } from "./api";
 
 function Login({ onLoginSuccess, onShowRegister }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Must input both username AND password');
+      setError("Must input both username AND password");
       return;
     }
-
     try {
-      const response = await fetch("http://localhost:5000/api/login", {
+      const data = await api("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: { username, password },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-        return;
-      }
-
-      setError('');
-      setUsername('');
-      setPassword('');
+      setError("");
+      setUsername("");
+      setPassword("");
       onLoginSuccess();
     } catch (err) {
-      setError("Server error — could not connect to backend");
+      setError(err.message || "Server error — could not connect to backend");
     }
   };
 
   return (
     <div className="login-container">
       <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
           <input
-            type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -55,8 +44,8 @@ function Login({ onLoginSuccess, onShowRegister }) {
         <div>
           <label htmlFor="password">Password:</label>
           <input
-            type="password"
             id="password"
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
@@ -71,5 +60,4 @@ function Login({ onLoginSuccess, onShowRegister }) {
     </div>
   );
 }
-
 export default Login;
