@@ -3,6 +3,7 @@ import Login from "./Login";
 import Register from "./Register";
 import "./App.css";
 import { api } from "./api";
+import TasksPanel from "./TasksPanel";
 
 function App() {
   const [message, setMessage] = useState("");
@@ -40,7 +41,13 @@ function App() {
               <strong>Backend says:</strong> {message}
             </div>
           )}
-          <button onClick={() => setIsLoggedIn(false)}>Logout</button>
+          <TasksPanel />
+          <button
+            onClick={() => setIsLoggedIn(false)}
+            style={{ marginTop: 24 }}
+          >
+            Logout
+          </button>
         </>
       )}
     </div>
