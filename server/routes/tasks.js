@@ -3,8 +3,8 @@ import { Router } from "express";
 const router = Router();
 
 let tasks = [
-  { id: 1, title: "Take out trash", score: 1, dueDate: "2025-12-01" },
-  { id: 2, title: "Sweep kitchen", score: 2, dueDate: "2025-11-05" },
+  { id: 1, title: "Task 1", score: 1, dueDate: "2025-11-01" },
+  { id: 2, title: "Task 2", score: 2, dueDate: "2025-12-01" },
 ];
 
 router.get("/", (req, res) => {
