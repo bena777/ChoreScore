@@ -39,6 +39,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
   };
 
   return (
+    <div className="login-page">
     <div className="register-container">
       <h2>Create Account</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -90,6 +91,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
       <button onClick={onBackToLogin} style={{ marginTop: "10px" }}>
         Back to Login
       </button>
+    </div>
     </div>
   );
 }

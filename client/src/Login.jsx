@@ -27,6 +27,7 @@ function Login({ onLoginSuccess, onShowRegister }) {
   };
 
   return (
+    <div className="login-page">
     <div className="login-container">
       <h2>Login</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -57,6 +58,7 @@ function Login({ onLoginSuccess, onShowRegister }) {
       <button onClick={onShowRegister} style={{ marginTop: "10px" }}>
         Create Account
       </button>
+    </div>
     </div>
   );
 }
