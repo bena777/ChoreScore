@@ -1,0 +1,25 @@
+.column {
+  background-color: #f2f2f3;
+  border-radius: 5px;
+  padding: 15px;
+  width:100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition-duration: 0.5s;
+}
+.column:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  transition-duration: 0.7s;
+}
+.column-header {
+  display: flex;
+  gap: 15px;
+  flex-direction: row;
+}
+.column-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}

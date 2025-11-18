@@ -1,6 +1,7 @@
+import express from "express";
+import tasksRouter from "./routes/tasks.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import express from "express";
 import cors from "cors";
 import pkg from "pg";
 import bcrypt from "bcrypt";
@@ -11,12 +12,19 @@ const pool = new Pool({
   ssl: {rejectUnauthorized: false}
 });
 const app = express();
-app.use(cors());
+
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
 app.get("/api", (req, res) => {
-  res.json({ message: "Backend functionality/sanity test" });
+  res.json({ message: "API is up" });
 });
+
+try {
+  const mod = await import("./routes/auth.js");
+  const authRouter = mod.default ?? mod;
+  if (authRouter) app.use("/api", authRouter);
+} catch {}
 
 
 app.post("/api/login", async (req, res) => {
@@ -60,5 +68,9 @@ app.post("/api/register",async (req,res) =>{
 });
 
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.use("/api/tasks", tasksRouter);
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

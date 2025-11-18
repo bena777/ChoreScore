@@ -1,47 +1,60 @@
-import { useState, useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
 import "./App.css";
+import Dashboard from "./pages/Dashboard.jsx";
 
-function App() {
-  const [message, setMessage] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
-  useEffect(() => {
-    if (isLoggedIn) {
-      fetch("http://localhost:5000/api")
-        .then((response) => response.json())
-        .then((data) => setMessage(data.message))
-        .catch((err) => console.log("Server not running yet"));
-    }
-  }, [isLoggedIn]);
- return (
-    <div className="container">
-      {!isLoggedIn ? (
-        showRegister ? (
-          <Register
-            onRegisterSuccess={() => setShowRegister(false)}
-            onBackToLogin={() => setShowRegister(false)}
-          />
-        ) : (
-          <Login
-            onLoginSuccess={() => setIsLoggedIn(true)}
-            onShowRegister={() => setShowRegister(true)}
-          />
-        )
-      ) : (
-        <>
-          <h1>ChoreScore</h1>
-          <p>Welcome to the app!</p>
-          {message && (
-            <div className="api-message">
-              <strong>Backend says:</strong> {message}
-            </div>
-          )}
-          <button onClick={() => setIsLoggedIn(false)}>Logout</button>
-        </>
-      )}
-    </div>
+function LoginPage() {
+  const navigate = useNavigate();
+  return (
+    <Login
+      onLoginSuccess={() => {
+        localStorage.setItem("loggedIn", "true");
+        navigate("/dashboard", { replace: true });
+      }}
+      onShowRegister={() => navigate("/register")}
+    />
   );
 }
-export default App;
+
+function RegisterPage() {
+  const navigate = useNavigate();
+  return (
+    <Register
+      onRegisterSuccess={() => navigate("/login")}
+      onBackToLogin={() => navigate("/login")}
+    />
+  );
+}
+
+function RequireAuth({ children }) {
+  const ok = localStorage.getItem("loggedIn") === "true";
+  return ok ? children : <Navigate to="/login" replace />;
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
+  );
+}
