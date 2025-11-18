@@ -10,6 +10,12 @@
   align-items: center;
   z-index: 100;
 }
+.modal input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+}
 .modal {
   background: #fff;
   padding: 20px;
@@ -20,6 +26,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .modal-close {
   position: absolute;

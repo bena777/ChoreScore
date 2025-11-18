@@ -10,6 +10,8 @@
   justify-content: flex-start;
   gap: 20px;
   touch-action: none;
+  box-sizing: border-box;
+  padding: 10px;
 }
 .task:hover {
   background-color: #f1f3f5;
