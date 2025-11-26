@@ -7,21 +7,18 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {rejectUnauthorized: false}
 });
-let tasks = [
-  { id: 1, title: "Task 1", score: 1, dueDate: "2025-11-01" },
-  { id: 2, title: "Task 2", score: 2, dueDate: "2025-12-01" },
-];
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res) => { // gets all tasks in database
   try{
-    const { rows } = await pool.query()
+    const { rows } = await pool.query("SELECT * FROM users.tasks");
+    res.json({ task: result.rows });
   } catch(err){
     console.error(err);
     res.status(500).json({ message: "database error" });
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res) => { // gets all tasks in database with specific users.tasks.student_id
   const id = Number(req.params.id);
   try {
     const result = await pool.query("SELECT * FROM users.tasks WHERE student_id = $1",[id]);
@@ -32,7 +29,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res) => { // inserts a new task into the database
   const { student_id, title, description, score = 1, dueDate = "" } = req.body || {};
   if (!title) return res.status(400).json({ message: "title required" });
   try{
@@ -47,7 +44,7 @@ router.post("/", async (req, res) => {
   res.status(201).json({ task });
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req, res) => { // updates a task with a specific users.tasks.task_id
   const id = Number(req.params.id);
   const { assigned_student_id, title, description, score, dueDate,is_completed } = req.body || {};
   try {
@@ -72,13 +69,17 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => { // deletes a task with a specific users.tasks.task_id
   const id = Number(req.params.id);
-  const next = tasks.filter((t) => t.id !== id);
-  if (next.length === tasks.length)
-    return res.status(404).json({ message: "not found" });
-  tasks = next;
-  res.status(204).end();
+  try{
+    const result = await pool.query("DELETE FROM users.tasks WHERE task_id = $1 RETURNING id",[id]);
+    if (result.rowCount === 0)
+      return res.status(404).json({ message: "not found" });
+    res.status(204).end();
+  } catch (err){
+    console.error(err);
+    res.status(500).json({ message: "database error"});
+  }
 });
 
 export default router;
