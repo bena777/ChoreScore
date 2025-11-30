@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const username = localStorage.getItem("username");
 
   const allUsers = [
     {
@@ -122,6 +123,7 @@ export default function Dashboard() {
   return (
     <div className="App">
       <header className="dashboard-header">ChoreScore</header>
+      <h2>Welcome, {username}</h2>
       {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
       {loading ? (
         <div>Loading…</div>

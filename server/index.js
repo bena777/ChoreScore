@@ -9,7 +9,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {rejectUnauthorized: false}
+  ssl: false
 });
 const app = express();
 
@@ -39,7 +39,7 @@ app.post("/api/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-    return res.json({ success: true, message: "Login successful!" });
+    return res.json({ success: true, message: "Login successful!", username:username });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, message: "Server error" });
