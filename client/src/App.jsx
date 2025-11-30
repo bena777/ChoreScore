@@ -9,6 +9,8 @@ import Login from "./Login";
 import Register from "./Register";
 import "./App.css";
 import Dashboard from "./pages/Dashboard.jsx";
+import Home from "./pages/Home.jsx";
+import Navbar from "./components/Navbar/Navbar.jsx";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -16,6 +18,8 @@ function LoginPage() {
     <Login
       onLoginSuccess={() => {
         localStorage.setItem("loggedIn", "true");
+        // Trigger storage event for navbar to update
+        window.dispatchEvent(new Event("storage"));
         navigate("/dashboard", { replace: true });
       }}
       onShowRegister={() => navigate("/register")}
@@ -41,8 +45,9 @@ function RequireAuth({ children }) {
 export default function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
@@ -53,7 +58,7 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
