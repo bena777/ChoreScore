@@ -18,6 +18,8 @@ function Login({ onLoginSuccess, onShowRegister }) {
         body: { username, password },
       });
       setError("");
+      // Store username in localStorage for later use
+      localStorage.setItem("loggedInUser", username);
       setUsername("");
       setPassword("");
       onLoginSuccess();
