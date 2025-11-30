@@ -131,6 +131,7 @@ export default function Dashboard() {
   return (
     <div className="App">
       <header className="dashboard-header">ChoreScore</header>
+      <h2>Welcome, {username}</h2>
       {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
       {loading ? (
         <div>Loading…</div>

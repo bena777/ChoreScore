@@ -7,24 +7,28 @@ const router = Router();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {rejectUnauthorized: false}
+  ssl: false
 });
+
+function mapTask(row) {
+  if (!row) return null;
+  return {
+    id: task.task_id,
+    title: task.task_name,
+    description: task.task_description,
+    score: task.task_rating,
+    dueDate: task.task_due_date,
+    student_id: task.student_id,
+    is_completed: task.is_completed,
+    datetime_created: task.datetime_created,
+    assignees: [] // Will be populated later if needed
+  };
+}
 
 router.get("/", async (req, res) => { // gets all tasks in database
   try {
     const { rows } = await pool.query("SELECT * FROM users.tasks");
-    const tasks = rows.map(task => ({
-      id: task.task_id,
-      title: task.task_name,
-      description: task.task_description,
-      score: task.task_rating,
-      dueDate: task.task_due_date,
-      student_id: task.student_id,
-      is_completed: task.is_completed,
-      datetime_created: task.datetime_created,
-      assignees: [] // Will be populated later if needed
-    }));
-    res.json({ tasks });
+    res.json({ tasks: rows.map(mapTask) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "database error" });
@@ -35,18 +39,7 @@ router.get("/:id", async (req, res) => { // gets all tasks in database with spec
   const id = Number(req.params.id);
   try {
     const { rows } = await pool.query("SELECT * FROM users.tasks WHERE student_id = $1", [id]);
-    const tasks = rows.map(task => ({
-      id: task.task_id,
-      title: task.task_name,
-      description: task.task_description,
-      score: task.task_rating,
-      dueDate: task.task_due_date,
-      student_id: task.student_id,
-      is_completed: task.is_completed,
-      datetime_created: task.datetime_created,
-      assignees: [] // Will be populated later if needed
-    }));
-    res.json({ tasks });
+    res.json({ tasks: rows.map(mapTask) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "database error" });
@@ -56,25 +49,13 @@ router.get("/:id", async (req, res) => { // gets all tasks in database with spec
 router.post("/", async (req, res) => { // inserts a new task into the database
   const { student_id, title, description, score = 1, dueDate = "" } = req.body || {};
   if (!title) return res.status(400).json({ message: "title required" });
-  try {
-    const result = await pool.query(
-      `INSERT INTO users.tasks (student_id, datetime_created, task_name, task_description, task_rating, task_due_date)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [student_id, new Date(), title, description, score, dueDate]
-    );
-    const dbTask = result.rows[0];
-    const task = {
-      id: dbTask.task_id,
-      title: dbTask.task_name,
-      description: dbTask.task_description,
-      score: dbTask.task_rating,
-      dueDate: dbTask.task_due_date,
-      student_id: dbTask.student_id,
-      is_completed: dbTask.is_completed,
-      datetime_created: dbTask.datetime_created,
-      assignees: [] // Will be populated later if needed
-    };
-    res.status(201).json({ task });
+  try{
+    const result = await pool.query(`INSERT INTO users.tasks (student_id,datetime_created,task_name,task_description,task_rating,task_due_date)"
+      VALUES ($1,$2,$3,$4,$5,$6,$7)`, [student_id,new Date(),title,description,score,dueDate]
+    )
+    const created = mapTask(result.rows[0]);
+    if (req.body && req.body.assignees) created.assignees = req.body.assignees;
+    res.status(201).json({ task: created });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "database error" });
@@ -99,19 +80,9 @@ router.put("/:id", async (req, res) => { // updates a task with a specific users
     );
     if (result.rowCount === 0)
       return res.status(404).json({ message: "not found" });
-    const dbTask = result.rows[0];
-    const task = {
-      id: dbTask.task_id,
-      title: dbTask.task_name,
-      description: dbTask.task_description,
-      score: dbTask.task_rating,
-      dueDate: dbTask.task_due_date,
-      student_id: dbTask.student_id,
-      is_completed: dbTask.is_completed,
-      datetime_created: dbTask.datetime_created,
-      assignees: [] // Will be populated later if needed
-    };
-    res.json({ task });
+    const updated = mapTask(result.rows[0]);
+    if (req.body && req.body.assignees) updated.assignees = req.body.assignees;
+    res.json({ task: updated });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "database error" });
