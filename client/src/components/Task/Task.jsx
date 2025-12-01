@@ -20,7 +20,11 @@ export const Task = ({
 
   const formatDueDate = (v) => {
     if (!v) return "";
-    const d = new Date(v + "T00:05:00");
+    // Handle both YYYY-MM-DD and full ISO date strings
+    const dateStr = typeof v === 'string' ? v.split('T')[0] : v;
+    const d = new Date(dateStr + "T00:00:00");
+    // Check if date is valid
+    if (isNaN(d.getTime())) return "";
     const now = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
@@ -40,10 +44,6 @@ export const Task = ({
     >
       <input type="checkbox" className="checkbox" />
       <span className="task-title">{title}</span>
-      <span className="task-due">
-        {formatDueDate(dueDate)}
-        {dueDate && <FaCalendar size={16} color="#555" />}
-      </span>
       <div className="assignees-stack">
         {visibleAssignees.map((a, i) => (
           <img
@@ -56,6 +56,10 @@ export const Task = ({
         ))}
         {extraCount > 0 && <div className="assignees-extra">+{extraCount}</div>}
       </div>
+      <span className="task-due">
+        {formatDueDate(dueDate)}
+        {dueDate && <FaCalendar size={16} color="#555" />}
+      </span>
       <div className="task-buttons">
         <button
           className="edit-btn"

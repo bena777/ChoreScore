@@ -11,6 +11,7 @@ import "./App.css";
 import Dashboard from "./pages/Dashboard.jsx";
 import Home from "./pages/Home.jsx";
 import Navbar from "./components/Navbar/Navbar.jsx";
+import { useDarkMode } from "./hooks/useDarkMode";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -43,9 +44,11 @@ function RequireAuth({ children }) {
 }
 
 export default function App() {
+  const [darkMode, setDarkMode] = useDarkMode();
+
   return (
     <Router>
-      <Navbar />
+      <Navbar darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />

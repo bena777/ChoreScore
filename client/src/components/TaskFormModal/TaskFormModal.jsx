@@ -52,12 +52,14 @@ export const TaskFormModal = ({
   if (!showModal) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <button className="modal-close" onClick={onClose}>
-          ×
-        </button>
-        <h2>{task ? "Edit Task" : "Add Task"}</h2>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{task ? "Edit Task" : "Add Task"}</h2>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
         <form onSubmit={handleSubmit}>
           <label>Task Name:</label>
           <input
@@ -98,7 +100,12 @@ export const TaskFormModal = ({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
-          <button type="submit">{task ? "Save" : "Add Task"}</button>
+          <div className="modal-footer">
+            <button type="button" className="modal-btn-cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="modal-btn-submit">{task ? "Save Changes" : "Add Task"}</button>
+          </div>
         </form>
       </div>
     </div>

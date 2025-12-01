@@ -57,8 +57,13 @@ app.post("/api/register",async (req,res) =>{
       return res.status(400).json({ message: "Username already exists" });
     }
     const hashedPassword = await bcrypt.hash(password, 10)
+    // Generate random hex color for avatar
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    // Generate avatar URL with the assigned color
+    const fullName = `${first_name} ${last_name}`.trim();
+    const avatarUrl = `https://www.s11-avatar.com/api/avatar?name=${encodeURIComponent(fullName)}&size=128&background=${randomColor}&color=ffffff&rounded=true&bold=true&length=2&format=png`;
     await pool.query(
-      "INSERT INTO users.students (first_name,last_name,username,password) VALUES ($1,$2,$3,$4)", [first_name,last_name,username,hashedPassword]
+      "INSERT INTO users.students (first_name,last_name,username,password,pfp_url) VALUES ($1,$2,$3,$4,$5)", [first_name,last_name,username,hashedPassword,avatarUrl]
     )
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -69,16 +74,16 @@ app.post("/api/register",async (req,res) =>{
 
 app.get("/api/users", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, first_name, last_name, username, roomate_group, is_ra FROM users.students");
+    const result = await pool.query("SELECT id, first_name, last_name, username, roomate_group, is_ra, pfp_url FROM users.students");
     const users = result.rows.map(user => ({
       id: user.id,
       username: user.username,
-      name: user.username, // For compatibility with frontend
+      name: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
       roomate_group: user.roomate_group,
       is_ra: user.is_ra,
-      avatar: null // No avatar in database, will be null
+      avatar: user.pfp_url
     }));
     res.json({ users });
     // Create a roommate group: generate a unique integer ID and assign to user
@@ -143,6 +148,56 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.use("/api/tasks", tasksRouter);
+
+// Update user profile
+app.put("/api/users/:username", async (req, res) => {
+  const { username } = req.params;
+  const { first_name, last_name, avatar } = req.body || {};
+  
+  try {
+    const result = await pool.query(
+      "UPDATE users.students SET first_name = COALESCE($1, first_name), last_name = COALESCE($2, last_name), pfp_url = COALESCE($3, pfp_url) WHERE username = $4 RETURNING id, first_name, last_name, username, roomate_group, is_ra, pfp_url",
+      [first_name, last_name, avatar, username]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const user = {
+      id: result.rows[0].id,
+      username: result.rows[0].username,
+      name: result.rows[0].username,
+      first_name: result.rows[0].first_name,
+      last_name: result.rows[0].last_name,
+      roomate_group: result.rows[0].roomate_group,
+      is_ra: result.rows[0].is_ra,
+      avatar: result.rows[0].pfp_url
+    };
+    
+    res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Database error" });
+  }
+});
+
+// Delete user account
+app.delete("/api/users/:username", async (req, res) => {
+  const { username } = req.params;
+  try {
+    // Delete related data first if needed (e.g., tasks). Keeping it simple here.
+    await pool.query("DELETE FROM users.tasks WHERE student_id IN (SELECT id FROM users.students WHERE username = $1)", [username]);
+    const result = await pool.query("DELETE FROM users.students WHERE username = $1 RETURNING id", [username]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Database error" });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

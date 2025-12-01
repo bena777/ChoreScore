@@ -1,7 +1,7 @@
 .task {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 5px;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  box-shadow: 0px 1px 4px var(--shadow-sm);
   width: 100%;
   max-height: 120px;
   padding: 20px;
@@ -12,9 +12,10 @@
   touch-action: none;
   box-sizing: border-box;
   padding: 10px;
+  transition: background-color 0.2s ease;
 }
 .task:hover {
-  background-color: #f1f3f5;
+  background-color: var(--bg-primary);
 }
 .checkbox {
   height: 20px;
@@ -23,7 +24,7 @@
 .task-title {
   flex-grow: 1;
   font-size: 16px;
-  color: #333;
+  color: var(--text-primary);
 }
 .task-buttons {
   display: grid;
@@ -61,6 +62,26 @@
 .add-btn:hover {
   background-color: gray;
 }
+
+/* Dark mode button colors - softer and less intense */
+.dark-mode .edit-btn {
+  background-color: #4a7c4d;
+}
+.dark-mode .edit-btn:hover {
+  background-color: #5a9c5d;
+}
+.dark-mode .del-btn {
+  background-color: #8b4947;
+}
+.dark-mode .del-btn:hover {
+  background-color: #a85856;
+}
+.dark-mode .add-btn {
+  background-color: #555555;
+}
+.dark-mode .add-btn:hover {
+  background-color: #666666;
+}
 .assignees-stack {
   display: flex;
   flex-direction: column;
@@ -70,16 +91,16 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 1px 3px var(--shadow-sm);
   cursor: pointer;
 }
 .assignees-extra {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: #ccc;
-  color: #fff;
+  background-color: var(--border-color);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;

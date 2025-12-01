@@ -42,8 +42,8 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
     <div className="login-page">
     <div className="register-container">
       <h2>Create Account</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>
