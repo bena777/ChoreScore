@@ -10,6 +10,8 @@ export const Task = ({
   openEditModal,
   onDeleteTask,
   dueDate,
+  recurrence,
+  onCompleteTask,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -30,6 +32,19 @@ export const Task = ({
       : `${mm}/${dd}/${yy}`;
   };
 
+  const formatRecurrence = (r) => {
+    switch (r) {
+      case "daily":
+        return "Daily";
+      case "weekly":
+        return "Weekly";
+      case "monthly":
+        return "Monthly";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -38,11 +53,31 @@ export const Task = ({
       style={style}
       className="task"
     >
-      <input type="checkbox" className="checkbox" />
+      <input 
+        type="checkbox" 
+        className="checkbox" 
+        onChange={(e) => {
+          e.stopPropagation();
+          if (e.target.checked && onCompleteTask) {
+            onCompleteTask();
+            if (recurrence === "none") {
+              return;
+            }
+            setTimeout(() => {
+              e.target.checked = false;
+            }, 400);
+          }
+        }}
+      />
       <span className="task-title">{title}</span>
       <span className="task-due">
         {formatDueDate(dueDate)}
         {dueDate && <FaCalendar size={16} color="#555" />}
+        {formatRecurrence(recurrence) && (
+          <span className="task-recurrence">
+            {" . "}{formatRecurrence(recurrence)}
+          </span>
+        )}
       </span>
       <div className="assignees-stack">
         {visibleAssignees.map((a, i) => (

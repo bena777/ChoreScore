@@ -96,6 +96,7 @@ export default function Dashboard() {
           assignees: t.assignees || [],
           score: t.score ?? 1,
           dueDate: t.dueDate || "",
+          recurrence: t.recurrence || "none",
         };
         const { task } = await api("/api/tasks", {
           method: "POST",
@@ -112,6 +113,17 @@ export default function Dashboard() {
     try {
       await api(`/api/tasks/${id}`, { method: "DELETE" });
       setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (e) {
+      setError(e.message || "Request failed");
+    }
+  };
+
+  const handleTaskComplete = async (task) => {
+    try {
+      const { task: updatedTask } = await api(`/api/tasks/${task.id}/complete`, {
+        method: "POST",
+      });
+      setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
     } catch (e) {
       setError(e.message || "Request failed");
     }
@@ -136,6 +148,7 @@ export default function Dashboard() {
             openAddModal={openAddModal}
             openEditModal={openEditModal}
             onDeleteTask={handleTaskDelete}
+            onCompleteTask={handleTaskComplete}
           />
           <TaskFormModal
             showModal={showModal}

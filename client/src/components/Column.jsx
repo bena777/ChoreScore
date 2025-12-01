@@ -12,6 +12,7 @@ export const Column = ({
   openAddModal,
   openEditModal,
   onDeleteTask,
+  onCompleteTask,
 }) => {
   return (
     <div className="column">
@@ -32,8 +33,10 @@ export const Column = ({
             assignees={task.assignees || []}
             score={task.score}
             dueDate={task.dueDate}
+            recurrence={task.recurrence}
             openEditModal={() => openEditModal(task)}
             onDeleteTask={() => onDeleteTask(task.id)}
+            onCompleteTask={() => onCompleteTask(task)}
           />
         ))}
       </SortableContext>

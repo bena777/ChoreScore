@@ -14,12 +14,14 @@ export const TaskFormModal = ({
   );
   const [score, setScore] = useState(task?.score || 3);
   const [dueDate, setDueDate] = useState(task?.dueDate || "");
+  const [recurrence, setRecurrence] = useState(task?.recurrence || "none");
 
   useEffect(() => {
     setTitle(task?.title || "");
     setSelectedAssignees(task?.assignees || []);
     setScore(task?.score || 3);
     setDueDate(task?.dueDate || "");
+    setRecurrence(task?.recurrence || "none");
   }, [task]);
 
   const toggleAssignee = (user) => {
@@ -32,7 +34,7 @@ export const TaskFormModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ ...task, title, assignees: selectedAssignees, score, dueDate });
+    onSubmit({ ...task, title, assignees: selectedAssignees, score, dueDate, recurrence, });
     onClose();
   };
 
@@ -85,6 +87,46 @@ export const TaskFormModal = ({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
+          <label>Recurrence:</label>
+          <div className="recurrence-options">
+            <label className="recurrence-option">
+              <input
+                type="radio"
+                value="none"
+                checked={recurrence === "none"}
+                onChange={(e) => setRecurrence(e.target.value)}
+              />
+              None
+            </label>
+
+            <label className="recurrence-option">
+              <input
+                type="radio"
+                value="daily"
+                checked={recurrence === "daily"}
+                onChange={(e) => setRecurrence(e.target.value)}
+              />
+              Daily
+            </label>
+            <label className="recurrence-option">
+              <input
+                type="radio"
+                value="weekly"
+                checked={recurrence === "weekly"}
+                onChange={(e) => setRecurrence(e.target.value)}
+              />
+              Weekly
+            </label>
+            <label className="recurrence-option">
+              <input
+                type="radio"
+                value="monthly"
+                checked={recurrence === "monthly"}
+                onChange={(e) => setRecurrence(e.target.value)}
+              />
+              Monthly
+            </label>
+          </div>
           <button type="submit">{task ? "Save" : "Add Task"}</button>
         </form>
       </div>

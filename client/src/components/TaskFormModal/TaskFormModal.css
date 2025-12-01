@@ -59,3 +59,21 @@
 .assignee-selection img.selected {
   border-color: #4caf50;
 }
+
+.recurrence-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+  align-items: center;
+}
+
+.recurrence-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recurrence-option input[type="radio"] {
+  margin: 0;
+}
