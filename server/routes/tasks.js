@@ -47,11 +47,13 @@ router.get("/:id", async (req, res) => { // gets all tasks in database with spec
 });
 
 router.post("/", async (req, res) => { // inserts a new task into the database
-  const { student_id, title, description, score = 1, dueDate = "" } = req.body || {};
+  const { student_id, assignees, title, description, score = 1, dueDate = "" } = req.body || {};
   if (!title) return res.status(400).json({ message: "title required" });
   try{
+    // prefer explicit student_id if provided, otherwise use first assignee id
+    const assigned = student_id ?? (Array.isArray(assignees) && assignees[0]?.id) ?? null;
     const result = await pool.query(`INSERT INTO users.tasks (student_id,datetime_created,task_name,task_description,task_rating,task_due_date)
-      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [student_id,new Date(),title,description,score,dueDate]
+      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [assigned,new Date(),title,description,score,dueDate]
     )
     const created = mapTask(result.rows[0]);
     if (req.body && req.body.assignees) created.assignees = req.body.assignees;
@@ -64,7 +66,8 @@ router.post("/", async (req, res) => { // inserts a new task into the database
 
 router.put("/:id", async (req, res) => { // updates a task with a specific users.tasks.task_id
   const id = Number(req.params.id);
-  const { assigned_student_id, title, description, score, dueDate, is_completed } = req.body || {};
+  const { assigned_student_id, assignees, title, description, score, dueDate, is_completed } = req.body || {};
+  const assigned = assigned_student_id ?? (Array.isArray(assignees) && assignees[0]?.id) ?? null;
   try {
     const result = await pool.query(
       `UPDATE users.tasks
@@ -76,7 +79,7 @@ router.put("/:id", async (req, res) => { // updates a task with a specific users
            is_completed = COALESCE($6, is_completed)
        WHERE task_id = $7
        RETURNING *`,
-      [assigned_student_id, title, description, score, dueDate, is_completed, id]
+      [assigned, title, description, score, dueDate, is_completed, id]
     );
     if (result.rowCount === 0)
       return res.status(404).json({ message: "not found" });

@@ -68,77 +68,91 @@ app.post("/api/register",async (req,res) =>{
 });
 
 app.get("/api/users", async (req, res) => {
+  const { username } = req.query || {};
   try {
-    const result = await pool.query("SELECT id, first_name, last_name, username, roomate_group, is_ra FROM users.students");
-    const users = result.rows.map(user => ({
+    if (!username) return res.json({ users: [] });
+
+    const ures = await pool.query(
+      "SELECT roomate_group FROM users.students WHERE username = $1 LIMIT 1",
+      [username]
+    );
+    if (ures.rowCount === 0) return res.json({ users: [] });
+    const group = ures.rows[0].roomate_group;
+    if (group == null) return res.json({ users: [] });
+
+    const result = await pool.query(
+      "SELECT id, first_name, last_name, username, roomate_group, is_ra FROM users.students WHERE roomate_group = $1",
+      [group]
+    );
+    const users = result.rows.map((user) => ({
       id: user.id,
       username: user.username,
-      name: user.username, // For compatibility with frontend
+      name: `${user.first_name || user.username} ${user.last_name || ""}`.trim(),
       first_name: user.first_name,
       last_name: user.last_name,
       roomate_group: user.roomate_group,
       is_ra: user.is_ra,
-      avatar: null // No avatar in database, will be null
+      avatar: null,
     }));
     res.json({ users });
-    // Create a roommate group: generate a unique integer ID and assign to user
-    app.post("/api/groups", async (req, res) => {
-      const { username, name } = req.body || {};
-      if (!username) return res.status(400).json({ message: "username required" });
-      try {
-        // Generate a unique integer group id
-        let groupId;
-        const min = 100000;
-        const max = 999999;
-        for (let i = 0; i < 50; i++) {
-          const candidate = Math.floor(Math.random() * (max - min + 1)) + min;
-          const exists = await pool.query(
-            "SELECT 1 FROM users.students WHERE roomate_group = $1 LIMIT 1",
-            [candidate]
-          );
-          if (exists.rowCount === 0) {
-            groupId = candidate;
-            break;
-          }
-        }
-        if (!groupId) return res.status(500).json({ message: "failed to generate group id" });
-        // Assign to the user
-        await pool.query(
-          "UPDATE users.students SET roomate_group = $1 WHERE username = $2",
-          [groupId, username]
-        );
-        // Optionally: could store group name elsewhere if a groups table exists
-        res.status(201).json({ group_id: groupId });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "database error" });
-      }
-    });
-
-    // Join a roommate group: set user's roomate_group to provided integer if it exists
-    app.post("/api/groups/join", async (req, res) => {
-      const { username, group_id } = req.body || {};
-      if (!username || !group_id) return res.status(400).json({ message: "username and group_id required" });
-      try {
-        const exists = await pool.query(
-          "SELECT 1 FROM users.students WHERE roomate_group = $1 LIMIT 1",
-          [Number(group_id)]
-        );
-        if (exists.rowCount === 0) return res.status(404).json({ message: "group not found" });
-        await pool.query(
-          "UPDATE users.students SET roomate_group = $1 WHERE username = $2",
-          [Number(group_id), username]
-        );
-        res.json({ success: true });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "database error" });
-      }
-    });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Database error" });
+  }
+});
+
+// Create a roommate group: generate a unique integer ID and assign to user
+app.post("/api/groups", async (req, res) => {
+  const { username, name } = req.body || {};
+  if (!username) return res.status(400).json({ message: "username required" });
+  try {
+    // Generate a unique integer group id
+    let groupId;
+    const min = 100000;
+    const max = 999999;
+    for (let i = 0; i < 50; i++) {
+      const candidate = Math.floor(Math.random() * (max - min + 1)) + min;
+      const exists = await pool.query(
+        "SELECT 1 FROM users.students WHERE roomate_group = $1 LIMIT 1",
+        [candidate]
+      );
+      if (exists.rowCount === 0) {
+        groupId = candidate;
+        break;
+      }
+    }
+    if (!groupId) return res.status(500).json({ message: "failed to generate group id" });
+    // Assign to the user
+    await pool.query(
+      "UPDATE users.students SET roomate_group = $1 WHERE username = $2",
+      [groupId, username]
+    );
+    // Optionally: could store group name elsewhere if a groups table exists
+    res.status(201).json({ group_id: groupId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "database error" });
+  }
+});
+
+// Join a roommate group: set user's roomate_group to provided integer if it exists
+app.post("/api/groups/join", async (req, res) => {
+  const { username, group_id } = req.body || {};
+  if (!username || !group_id) return res.status(400).json({ message: "username and group_id required" });
+  try {
+    const exists = await pool.query(
+      "SELECT 1 FROM users.students WHERE roomate_group = $1 LIMIT 1",
+      [Number(group_id)]
+    );
+    if (exists.rowCount === 0) return res.status(404).json({ message: "group not found" });
+    await pool.query(
+      "UPDATE users.students SET roomate_group = $1 WHERE username = $2",
+      [Number(group_id), username]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "database error" });
   }
 });
 

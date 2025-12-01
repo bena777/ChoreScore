@@ -31,37 +31,41 @@ export default function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // First, fetch all users to get the logged-in user's ID
-        const { users } = await api("/api/users");
-        setAllUsers(users);
-        
-        // Get logged-in username and find their ID
         const loggedInUsername = localStorage.getItem("loggedInUser");
         if (!loggedInUsername) {
           setError("No logged-in user found");
           setLoading(false);
           return;
         }
-        
-        const currentUser = users.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
+
+        // Fetch only users in the same roommate group as the logged-in user
+        const { users } = await api(`/api/users?username=${encodeURIComponent(loggedInUsername)}`);
+        setAllUsers(users || []);
+
+        // Try to find the current user in the returned group
+        const currentUser = (users || []).find(
+          (u) => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase()
+        );
         if (!currentUser) {
-          setError("User not found");
+          // If current user isn't returned (not in a group), show no tasks
+          setUserName(loggedInUsername);
+          setTasks([]);
           setLoading(false);
           return;
         }
-        
+
         setUserName(currentUser.first_name || currentUser.name || currentUser.username || "");
-        
+
         // Fetch tasks only for the logged-in user
         const { tasks } = await api(`/api/tasks/${currentUser.id}`);
-        setTasks(tasks);
+        setTasks(tasks || []);
       } catch (e) {
         setError(e.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -107,7 +111,8 @@ export default function Dashboard() {
           assignees: t.assignees || [],
           score: t.score ?? 1,
           dueDate: t.dueDate || "",
-          student_id: user.id,
+          // set student_id to the assigned user's id (first assignee) so DB assignment is correct
+          student_id: (t.assignees && t.assignees[0] && t.assignees[0].id) || null,
         };
         const { task } = await api("/api/tasks", {
           method: "POST",
