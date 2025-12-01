@@ -13,14 +13,14 @@ const pool = new Pool({
 function mapTask(row) {
   if (!row) return null;
   return {
-    id: task.task_id,
-    title: task.task_name,
-    description: task.task_description,
-    score: task.task_rating,
-    dueDate: task.task_due_date,
-    student_id: task.student_id,
-    is_completed: task.is_completed,
-    datetime_created: task.datetime_created,
+    id: row.task_id,
+    title: row.task_name,
+    description: row.task_description,
+    score: row.task_rating,
+    dueDate: row.task_due_date,
+    student_id: row.student_id,
+    is_completed: row.is_completed,
+    datetime_created: row.datetime_created,
     assignees: [] // Will be populated later if needed
   };
 }
@@ -50,8 +50,8 @@ router.post("/", async (req, res) => { // inserts a new task into the database
   const { student_id, title, description, score = 1, dueDate = "" } = req.body || {};
   if (!title) return res.status(400).json({ message: "title required" });
   try{
-    const result = await pool.query(`INSERT INTO users.tasks (student_id,datetime_created,task_name,task_description,task_rating,task_due_date)"
-      VALUES ($1,$2,$3,$4,$5,$6,$7)`, [student_id,new Date(),title,description,score,dueDate]
+    const result = await pool.query(`INSERT INTO users.tasks (student_id,datetime_created,task_name,task_description,task_rating,task_due_date)
+      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [student_id,new Date(),title,description,score,dueDate]
     )
     const created = mapTask(result.rows[0]);
     if (req.body && req.body.assignees) created.assignees = req.body.assignees;

@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [userName, setUserName] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -35,19 +36,21 @@ export default function Dashboard() {
         setAllUsers(users);
         
         // Get logged-in username and find their ID
-        const username = localStorage.getItem("loggedInUser");
-        if (!username) {
+        const loggedInUsername = localStorage.getItem("loggedInUser");
+        if (!loggedInUsername) {
           setError("No logged-in user found");
           setLoading(false);
           return;
         }
         
-        const currentUser = users.find(u => (u.username || u.name || "").toLowerCase() === username.toLowerCase());
+        const currentUser = users.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
         if (!currentUser) {
           setError("User not found");
           setLoading(false);
           return;
         }
+        
+        setUserName(currentUser.first_name || currentUser.name || currentUser.username || "");
         
         // Fetch tasks only for the logged-in user
         const { tasks } = await api(`/api/tasks/${currentUser.id}`);
@@ -94,10 +97,10 @@ export default function Dashboard() {
         setTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
       } else {
         // Get logged-in username from localStorage
-        const username = localStorage.getItem("loggedInUser");
-        if (!username) throw new Error("No logged-in user");
+        const loggedInUsername = localStorage.getItem("loggedInUser");
+        if (!loggedInUsername) throw new Error("No logged-in user");
         // Find the user in allUsers by username field (case-insensitive)
-        const user = allUsers.find(u => (u.username || u.name || "").toLowerCase() === username.toLowerCase());
+        const user = allUsers.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
         if (!user) throw new Error("User not found for task assignment");
         const payload = {
           title: t.title,
@@ -131,7 +134,7 @@ export default function Dashboard() {
   return (
     <div className="App">
       <header className="dashboard-header">ChoreScore</header>
-      <h2>Welcome, {username}</h2>
+      <h2>Welcome, {userName}</h2>
       {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
       {loading ? (
         <div>Loading…</div>
