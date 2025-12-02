@@ -6,17 +6,16 @@ import { FaPencilAlt, FaTrash, FaCalendar } from "react-icons/fa";
 export const Task = ({
   id,
   title,
-  assignees,
+  assignee,
   openEditModal,
   onDeleteTask,
   dueDate,
   score,
+  is_completed,
+  onCompleteTask,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
-  const maxVisibleAssignees = 2;
-  const extraCount = assignees.length - maxVisibleAssignees;
-  const visibleAssignees = assignees.slice(0, maxVisibleAssignees);
   const style = { transition, transform: CSS.Transform.toString(transform) };
 
   const formatDueDate = (v) => {
@@ -43,27 +42,35 @@ export const Task = ({
       style={style}
       className="task"
     >
+      
       <div className="checkbox-container">
         <span className="task-score">{score || 1}</span>
-        <input type="checkbox" className="checkbox" />
+        <input 
+          type="checkbox" 
+          className="checkbox" 
+          checked={is_completed || false}
+          onChange={(e) => {
+            e.stopPropagation();
+            onCompleteTask();
+          }}
+        />
       </div>
       <span className="task-title">{title}</span>
       <div className="assignees-stack">
-        {visibleAssignees.map((a, i) => (
+        {assignee && (
           <img
-            key={i}
             className="assignee-avatar"
-            src={a.avatar}
-            alt={a.name}
-            title={a.name}
+            src={assignee.avatar}
+            alt={assignee.name}
+            title={assignee.name}
           />
-        ))}
-        {extraCount > 0 && <div className="assignees-extra">+{extraCount}</div>}
+        )}
       </div>
       <span className="task-due">
         {formatDueDate(dueDate)}
         {dueDate && <FaCalendar size={16} style={{ color: 'inherit' }} />}
       </span>
+      <span className="task-score">{score}</span>
       <div className="task-buttons">
         <button
           className="edit-btn"

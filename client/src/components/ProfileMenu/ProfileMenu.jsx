@@ -159,6 +159,9 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
             <div className="profile-dropdown-info">
               <div className="profile-dropdown-name">{getDisplayName()}</div>
               <div className="profile-dropdown-username">@{user.username}</div>
+              {user.roomate_group && user.roomate_group !== -1 && (
+                <div className="profile-dropdown-group">Group: {user.roomate_group}</div>
+              )}
             </div>
           </div>
           

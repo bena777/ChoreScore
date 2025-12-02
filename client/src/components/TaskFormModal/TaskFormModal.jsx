@@ -7,21 +7,22 @@ export const TaskFormModal = ({
   task,
   allUsers,
   onSubmit,
+  currentUserGroupId,
 }) => {
   const [title, setTitle] = useState(task?.title || "");
-  const [selectedAssignees, setSelectedAssignees] = useState(task?.assignees || []);
+  const [selectedAssignee, setSelectedAssignee] = useState(task?.assignee || null);
   const [score, setScore] = useState(task?.score || 3);
   const [dueDate, setDueDate] = useState("");
 
   useEffect(() => {
     setTitle(task?.title || "");
     setScore(task?.score || 3);
-    // Map task.student_id to a user in allUsers for editing
-    if (task?.student_id && Array.isArray(allUsers)) {
-      const u = allUsers.find(x => x.id === task.student_id);
-      setSelectedAssignees(u ? [u] : []);
+    // Map task.assignee_id to a user in allUsers for editing
+    if (task?.assignee_id && Array.isArray(allUsers)) {
+      const u = allUsers.find(x => x.id === task.assignee_id);
+      setSelectedAssignee(u || null);
     } else {
-      setSelectedAssignees(task?.assignees || []);
+      setSelectedAssignee(task?.assignee || null);
     }
     // Convert timestamp to YYYY-MM-DD for date input
     if (task?.dueDate) {
@@ -35,17 +36,18 @@ export const TaskFormModal = ({
     }
   }, [task, allUsers]);
 
-  const toggleAssignee = (user) => {
-    if (selectedAssignees.find((a) => a.id === user.id)) {
-      setSelectedAssignees(selectedAssignees.filter((a) => a.id !== user.id));
-    } else {
-      setSelectedAssignees([...selectedAssignees, user]);
-    }
+  // Filter users by same group_id as current user
+  const availableAssignees = allUsers.filter(
+    (u) => u.roomate_group && u.roomate_group === currentUserGroupId
+  );
+
+  const selectAssignee = (user) => {
+    setSelectedAssignee(selectedAssignee?.id === user.id ? null : user);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ ...task, title, assignees: selectedAssignees, score, dueDate });
+    onSubmit({ ...task, title, assignee: selectedAssignee, score, dueDate });
     onClose();
   };
 
@@ -68,20 +70,20 @@ export const TaskFormModal = ({
             onChange={(e) => setTitle(e.target.value)}
             required
           />
-          <label>Assignees:</label>
+          <label>Assignee:</label>
           <div className="assignee-selection">
-            {allUsers.map((user) => (
+            {availableAssignees.map((user) => (
               <img
                 key={user.id}
                 src={user.avatar}
                 alt={user.name}
                 title={user.name}
                 className={
-                  selectedAssignees.find((a) => a.id === user.id)
+                  selectedAssignee?.id === user.id
                     ? "selected"
                     : ""
                 }
-                onClick={() => toggleAssignee(user)}
+                onClick={() => selectAssignee(user)}
               />
             ))}
           </div>
