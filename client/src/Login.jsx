@@ -18,6 +18,8 @@ function Login({ onLoginSuccess, onShowRegister }) {
         body: { username, password },
       });
       setError("");
+      // Store username in localStorage for later use
+      localStorage.setItem("loggedInUser", username);
       setUsername("");
       setPassword("");
       onLoginSuccess();
@@ -30,7 +32,7 @@ function Login({ onLoginSuccess, onShowRegister }) {
     <div className="login-page">
     <div className="login-container">
       <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username:</label>

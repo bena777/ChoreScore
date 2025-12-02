@@ -9,18 +9,31 @@ export const TaskFormModal = ({
   onSubmit,
 }) => {
   const [title, setTitle] = useState(task?.title || "");
-  const [selectedAssignees, setSelectedAssignees] = useState(
-    task?.assignees || []
-  );
+  const [selectedAssignees, setSelectedAssignees] = useState(task?.assignees || []);
   const [score, setScore] = useState(task?.score || 3);
-  const [dueDate, setDueDate] = useState(task?.dueDate || "");
+  const [dueDate, setDueDate] = useState("");
 
   useEffect(() => {
     setTitle(task?.title || "");
-    setSelectedAssignees(task?.assignees || []);
     setScore(task?.score || 3);
-    setDueDate(task?.dueDate || "");
-  }, [task]);
+    // Map task.student_id to a user in allUsers for editing
+    if (task?.student_id && Array.isArray(allUsers)) {
+      const u = allUsers.find(x => x.id === task.student_id);
+      setSelectedAssignees(u ? [u] : []);
+    } else {
+      setSelectedAssignees(task?.assignees || []);
+    }
+    // Convert timestamp to YYYY-MM-DD for date input
+    if (task?.dueDate) {
+      const d = new Date(task.dueDate);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      setDueDate(`${yyyy}-${mm}-${dd}`);
+    } else {
+      setDueDate("");
+    }
+  }, [task, allUsers]);
 
   const toggleAssignee = (user) => {
     if (selectedAssignees.find((a) => a.id === user.id)) {
@@ -39,12 +52,14 @@ export const TaskFormModal = ({
   if (!showModal) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <button className="modal-close" onClick={onClose}>
-          ×
-        </button>
-        <h2>{task ? "Edit Task" : "Add Task"}</h2>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{task ? "Edit Task" : "Add Task"}</h2>
+          <button className="modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
         <form onSubmit={handleSubmit}>
           <label>Task Name:</label>
           <input
@@ -85,7 +100,12 @@ export const TaskFormModal = ({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
-          <button type="submit">{task ? "Save" : "Add Task"}</button>
+          <div className="modal-footer">
+            <button type="button" className="modal-btn-cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="modal-btn-submit">{task ? "Save Changes" : "Add Task"}</button>
+          </div>
         </form>
       </div>
     </div>
