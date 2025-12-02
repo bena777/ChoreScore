@@ -7,10 +7,12 @@ Install dependencies:
 ```bash
 npm install
 ```
+Ensure you have the appropriate .env file with in the "server" directory
 
 Run frontend (dev build, will auto-refresh):  
 In a new terminal,
 ```bash
+npm install
 cd client
 npm run dev
 ```
@@ -19,6 +21,7 @@ npm run dev
 Run backend (dev build, will auto-refresh):  
 In a new terminal,
 ```bash
+npm install
 cd server
 npm run dev
 ```

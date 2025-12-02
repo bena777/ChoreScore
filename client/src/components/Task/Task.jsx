@@ -42,15 +42,19 @@ export const Task = ({
       style={style}
       className="task"
     >
-      <input 
-        type="checkbox" 
-        className="checkbox" 
-        checked={is_completed || false}
-        onChange={(e) => {
-          e.stopPropagation();
-          onCompleteTask();
-        }}
-      />
+      
+      <div className="checkbox-container">
+        <span className="task-score">{score || 1}</span>
+        <input 
+          type="checkbox" 
+          className="checkbox" 
+          checked={is_completed || false}
+          onChange={(e) => {
+            e.stopPropagation();
+            onCompleteTask();
+          }}
+        />
+      </div>
       <span className="task-title">{title}</span>
       <div className="assignees-stack">
         {assignee && (
@@ -64,7 +68,7 @@ export const Task = ({
       </div>
       <span className="task-due">
         {formatDueDate(dueDate)}
-        {dueDate && <FaCalendar size={16} color="#555" />}
+        {dueDate && <FaCalendar size={16} style={{ color: 'inherit' }} />}
       </span>
       <span className="task-score">{score}</span>
       <div className="task-buttons">
