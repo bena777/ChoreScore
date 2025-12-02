@@ -10,6 +10,7 @@ export const Task = ({
   openEditModal,
   onDeleteTask,
   dueDate,
+  score,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -42,7 +43,10 @@ export const Task = ({
       style={style}
       className="task"
     >
-      <input type="checkbox" className="checkbox" />
+      <div className="checkbox-container">
+        <span className="task-score">{score || 1}</span>
+        <input type="checkbox" className="checkbox" />
+      </div>
       <span className="task-title">{title}</span>
       <div className="assignees-stack">
         {visibleAssignees.map((a, i) => (
@@ -58,7 +62,7 @@ export const Task = ({
       </div>
       <span className="task-due">
         {formatDueDate(dueDate)}
-        {dueDate && <FaCalendar size={16} color="#555" />}
+        {dueDate && <FaCalendar size={16} style={{ color: 'inherit' }} />}
       </span>
       <div className="task-buttons">
         <button

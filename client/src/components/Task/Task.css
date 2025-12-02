@@ -17,9 +17,30 @@
 .task:hover {
   background-color: var(--bg-primary);
 }
+
+.checkbox-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-score {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .checkbox {
   height: 20px;
   width: 20px;
+  margin: 0;
+  display: block;
 }
 .task-title {
   flex-grow: 1;
@@ -122,4 +143,8 @@
   font-size: 0.85rem;
   color: #555;
   margin-top: 4px;
+}
+
+.dark-mode .task-due {
+  color: #aaa;
 }
