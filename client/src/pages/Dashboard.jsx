@@ -96,18 +96,11 @@ export default function Dashboard() {
         });
         setTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
       } else {
-        // Get logged-in username from localStorage
-        const loggedInUsername = localStorage.getItem("loggedInUser");
-        if (!loggedInUsername) throw new Error("No logged-in user");
-        // Find the user in allUsers by username field (case-insensitive)
-        const user = allUsers.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
-        if (!user) throw new Error("User not found for task assignment");
         const payload = {
           title: t.title,
-          assignees: t.assignees || [],
+          assignee: t.assignee || null,
           score: t.score ?? 1,
           dueDate: t.dueDate || "",
-          student_id: user.id,
         };
         const { task } = await api("/api/tasks", {
           method: "POST",
@@ -156,6 +149,7 @@ export default function Dashboard() {
             task={currentTask}
             allUsers={allUsers}
             onSubmit={handleTaskSubmit}
+            currentUserGroupId={allUsers.find(u => (u.username || u.name || "").toLowerCase() === (localStorage.getItem("loggedInUser") || "").toLowerCase())?.roomate_group}
           />
         </DndContext>
       )}

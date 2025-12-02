@@ -150,7 +150,7 @@ export const Column = ({
             id={task.id}
             title={task.title}
             key={task.id}
-            assignees={task.assignees || []}
+            assignee={task.assignee || null}
             score={task.score}
             dueDate={task.dueDate}
             openEditModal={() => openEditModal(task)}
