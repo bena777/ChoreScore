@@ -14,6 +14,7 @@ export const Column = ({
   openAddModal,
   openEditModal,
   onDeleteTask,
+  onCompleteTask,
   currentUser,
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -136,7 +137,7 @@ export const Column = ({
 
   return (
     <div className="column">
-      <h1 className="column-title">[Group_Name] Choreboard</h1>
+      <h1 className="column-title">{currentUser?.username}'s Choreboard</h1>
       <div className="column-header">
         <div className="task-buttons">
           <button className="add-btn" title="Add Task" onClick={openAddModal}>
@@ -153,8 +154,10 @@ export const Column = ({
             assignee={task.assignee || null}
             score={task.score}
             dueDate={task.dueDate}
+            is_completed={task.is_completed}
             openEditModal={() => openEditModal(task)}
             onDeleteTask={() => onDeleteTask(task.id)}
+            onCompleteTask={() => onCompleteTask(task.id)}
           />
         ))}
       </SortableContext>

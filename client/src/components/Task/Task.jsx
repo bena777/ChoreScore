@@ -10,6 +10,9 @@ export const Task = ({
   openEditModal,
   onDeleteTask,
   dueDate,
+  score,
+  is_completed,
+  onCompleteTask,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -39,7 +42,15 @@ export const Task = ({
       style={style}
       className="task"
     >
-      <input type="checkbox" className="checkbox" />
+      <input 
+        type="checkbox" 
+        className="checkbox" 
+        checked={is_completed || false}
+        onChange={(e) => {
+          e.stopPropagation();
+          onCompleteTask();
+        }}
+      />
       <span className="task-title">{title}</span>
       <div className="assignees-stack">
         {assignee && (
@@ -55,6 +66,7 @@ export const Task = ({
         {formatDueDate(dueDate)}
         {dueDate && <FaCalendar size={16} color="#555" />}
       </span>
+      <span className="task-score">{score}</span>
       <div className="task-buttons">
         <button
           className="edit-btn"

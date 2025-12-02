@@ -1,0 +1,75 @@
+.leaderboard {
+  width: 250px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+}
+
+.leaderboard h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  text-align: center;
+  color: #333;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.leaderboard-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-item.current-user {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.leaderboard-rank {
+  font-weight: bold;
+  color: #666;
+  min-width: 30px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.leaderboard-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-score {
+  font-weight: bold;
+  color: #2196f3;
+  font-size: 16px;
+  min-width: 40px;
+  text-align: right;
+}

@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { Column } from "../components/Column.jsx";
+import { Leaderboard } from "../components/Leaderboard/Leaderboard.jsx";
 import { TaskFormModal } from "../components/TaskFormModal/TaskFormModal.jsx";
 import { api } from "../api";
 
@@ -16,10 +17,12 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [allGroupTasks, setAllGroupTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [userName, setUserName] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -43,18 +46,23 @@ export default function Dashboard() {
           return;
         }
         
-        const currentUser = users.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
-        if (!currentUser) {
+        const user = users.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
+        if (!user) {
           setError("User not found");
           setLoading(false);
           return;
         }
         
-        setUserName(currentUser.first_name || currentUser.name || currentUser.username || "");
+        setCurrentUser(user);
+        setUserName(user.first_name || user.name || user.username || "");
         
         // Fetch tasks only for the logged-in user
-        const { tasks } = await api(`/api/tasks/${currentUser.id}`);
+        const { tasks } = await api(`/api/tasks/${user.id}`);
         setTasks(tasks);
+        
+        // Fetch all tasks to calculate group leaderboard scores
+        const { tasks: allTasks } = await api("/api/tasks");
+        setAllGroupTasks(allTasks);
       } catch (e) {
         setError(e.message || "Failed to load data");
       } finally {
@@ -95,6 +103,7 @@ export default function Dashboard() {
           body: t,
         });
         setTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
+        setAllGroupTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
       } else {
         const payload = {
           title: t.title,
@@ -107,6 +116,7 @@ export default function Dashboard() {
           body: payload,
         });
         setTasks((prev) => [...prev, task]);
+        setAllGroupTasks((prev) => [...prev, task]);
       }
     } catch (e) {
       setError(e.message || "Request failed");
@@ -117,6 +127,23 @@ export default function Dashboard() {
     try {
       await api(`/api/tasks/${id}`, { method: "DELETE" });
       setTasks((prev) => prev.filter((t) => t.id !== id));
+      setAllGroupTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch (e) {
+      setError(e.message || "Request failed");
+    }
+  };
+
+  const handleCompleteTask = async (id) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        const { task: updated } = await api(`/api/tasks/${id}`, {
+          method: "PUT",
+          body: { ...task, is_completed: !task.is_completed },
+        });
+        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+        setAllGroupTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      }
     } catch (e) {
       setError(e.message || "Request failed");
     }
@@ -131,27 +158,37 @@ export default function Dashboard() {
       {loading ? (
         <div>Loading…</div>
       ) : (
-        <DndContext
-          onDragEnd={handleDragEnd}
-          collisionDetection={closestCorners}
-          sensors={sensors}
-        >
-          <Column
-            tasks={board}
-            openAddModal={openAddModal}
-            openEditModal={openEditModal}
-            onDeleteTask={handleTaskDelete}
-            currentUser={allUsers.find(u => (u.username || u.name || "").toLowerCase() === (localStorage.getItem("loggedInUser") || "").toLowerCase())}
-          />
-          <TaskFormModal
-            showModal={showModal}
-            onClose={() => setShowModal(false)}
-            task={currentTask}
-            allUsers={allUsers}
-            onSubmit={handleTaskSubmit}
-            currentUserGroupId={allUsers.find(u => (u.username || u.name || "").toLowerCase() === (localStorage.getItem("loggedInUser") || "").toLowerCase())?.roomate_group}
-          />
-        </DndContext>
+        <div style={{ display: "flex", gap: 16 }}>
+          {currentUser && (
+            <Leaderboard 
+              users={allUsers} 
+              tasks={allGroupTasks}
+              currentUser={currentUser}
+            />
+          )}
+          <DndContext
+            onDragEnd={handleDragEnd}
+            collisionDetection={closestCorners}
+            sensors={sensors}
+          >
+            <Column
+              tasks={board}
+              openAddModal={openAddModal}
+              openEditModal={openEditModal}
+              onDeleteTask={handleTaskDelete}
+              onCompleteTask={handleCompleteTask}
+              currentUser={currentUser}
+            />
+            <TaskFormModal
+              showModal={showModal}
+              onClose={() => setShowModal(false)}
+              task={currentTask}
+              allUsers={allUsers}
+              onSubmit={handleTaskSubmit}
+              currentUserGroupId={currentUser?.roomate_group}
+            />
+          </DndContext>
+        </div>
       )}
     </div>
   );
