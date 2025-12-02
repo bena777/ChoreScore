@@ -105,6 +105,15 @@
   text-overflow: ellipsis;
 }
 
+.profile-dropdown-group {
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .profile-dropdown-divider {
   height: 1px;
   background: var(--border-color);

@@ -59,9 +59,54 @@ router.get("/", async (req, res) => { // gets all tasks in database
   }
 });
 
-router.get("/:id", async (req, res) => { // gets all tasks assigned to a specific user
+router.get("/:id", async (req, res) => { // gets all tasks for users in the same group as the specified user
   const id = Number(req.params.id);
   try {
+    // First, get the user's group
+    const userResult = await pool.query(
+      'SELECT roomate_group FROM users.students WHERE id = $1',
+      [id]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    const userGroup = userResult.rows[0].roomate_group;
+    
+    // If user is not in a group, return only their tasks
+    if (!userGroup || userGroup === -1) {
+      const { rows } = await pool.query(`
+        SELECT 
+          t.*,
+          s.first_name as assignee_first_name,
+          s.last_name as assignee_last_name,
+          s.username as assignee_username,
+          s.pfp_url as assignee_avatar
+        FROM users.tasks t
+        LEFT JOIN users.students s ON t.student_id = s.id
+        WHERE t.student_id = $1
+      `, [id]);
+      
+      const tasks = rows.map(row => {
+        const task = mapTask(row);
+        if (row.student_id) {
+          task.assignee = {
+            id: row.student_id,
+            name: row.assignee_username,
+            username: row.assignee_username,
+            first_name: row.assignee_first_name,
+            last_name: row.assignee_last_name,
+            avatar: row.assignee_avatar
+          };
+        }
+        return task;
+      });
+      
+      return res.json({ tasks });
+    }
+    
+    // Get all tasks for users in the same group
     const { rows } = await pool.query(`
       SELECT 
         t.*,
@@ -71,8 +116,8 @@ router.get("/:id", async (req, res) => { // gets all tasks assigned to a specifi
         s.pfp_url as assignee_avatar
       FROM users.tasks t
       LEFT JOIN users.students s ON t.student_id = s.id
-      WHERE t.student_id = $1
-    `, [id]);
+      WHERE s.roomate_group = $1
+    `, [userGroup]);
     
     const tasks = rows.map(row => {
       const task = mapTask(row);

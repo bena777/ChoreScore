@@ -159,7 +159,7 @@ export default function Dashboard() {
         <div>Loading…</div>
       ) : (
         <div style={{ display: "flex", gap: 16 }}>
-          {currentUser && (
+          {currentUser && currentUser.roomate_group && currentUser.roomate_group !== -1 && (
             <Leaderboard 
               users={allUsers} 
               tasks={allGroupTasks}
