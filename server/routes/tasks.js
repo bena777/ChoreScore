@@ -278,10 +278,10 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ message: "not found" });
     }
 
-    const taskOwnerId = existing.rows[0].student_id;
-    if (!isRa && taskOwnerId && taskOwnerId !== userId) {
-      return res.status(403).json({ message: "forbidden" });
-    }
+    // const taskOwnerId = existing.rows[0].student_id;
+    // if (!isRa && taskOwnerId && taskOwnerId !== userId) {
+    //   return res.status(403).json({ message: "forbidden" });
+    // }
 
     let assigneeUser = assignee || null;
     if (!assigneeUser && Array.isArray(assignees) && assignees.length > 0) {
@@ -366,10 +366,10 @@ router.delete("/:id", async (req, res) => {
       return res.status(404).json({ message: "not found" });
     }
 
-    const taskOwnerId = existing.rows[0].student_id;
-    if (!isRa && taskOwnerId !== userId) {
-      return res.status(403).json({ message: "forbidden" });
-    }
+    // const taskOwnerId = existing.rows[0].student_id;
+    // if (!isRa && taskOwnerId && taskOwnerId !== userId) {
+    //   return res.status(403).json({ message: "forbidden" });
+    // }
 
     await pool.query("DELETE FROM users.tasks WHERE task_id = $1", [id]);
     res.status(204).end();
