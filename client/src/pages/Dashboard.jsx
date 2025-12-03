@@ -37,7 +37,7 @@ export default function Dashboard() {
         // First, fetch all users to get the logged-in user's ID
         const { users } = await api("/api/users");
         setAllUsers(users);
-        
+
         // Get logged-in username and find their ID
         const loggedInUsername = localStorage.getItem("loggedInUser");
         if (!loggedInUsername) {
@@ -45,31 +45,33 @@ export default function Dashboard() {
           setLoading(false);
           return;
         }
-        
-        const user = users.find(u => (u.username || u.name || "").toLowerCase() === loggedInUsername.toLowerCase());
+
+        const user = users.find(
+          (u) =>
+            (u.username || u.name || "").toLowerCase() ===
+            loggedInUsername.toLowerCase()
+        );
         if (!user) {
           setError("User not found");
           setLoading(false);
           return;
         }
-        
+
         setCurrentUser(user);
         setUserName(user.first_name || user.name || user.username || "");
-        
+
         // Fetch tasks only for the logged-in user
+        // Fetch all tasks to calculate group leaderboard scores
         const { tasks } = await api(`/api/tasks/${user.id}`);
         setTasks(tasks);
-        
-        // Fetch all tasks to calculate group leaderboard scores
-        const { tasks: allTasks } = await api("/api/tasks");
-        setAllGroupTasks(allTasks);
+        setAllGroupTasks(tasks);
       } catch (e) {
         setError(e.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -103,7 +105,9 @@ export default function Dashboard() {
           body: t,
         });
         setTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
-        setAllGroupTasks((prev) => prev.map((x) => (x.id === task.id ? task : x)));
+        setAllGroupTasks((prev) =>
+          prev.map((x) => (x.id === task.id ? task : x))
+        );
       } else {
         const payload = {
           title: t.title,
@@ -135,14 +139,16 @@ export default function Dashboard() {
 
   const handleCompleteTask = async (id) => {
     try {
-      const task = tasks.find(t => t.id === id);
+      const task = tasks.find((t) => t.id === id);
       if (task) {
         const { task: updated } = await api(`/api/tasks/${id}`, {
           method: "PUT",
           body: { ...task, is_completed: !task.is_completed },
         });
         setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
-        setAllGroupTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+        setAllGroupTasks((prev) =>
+          prev.map((t) => (t.id === id ? updated : t))
+        );
       }
     } catch (e) {
       setError(e.message || "Request failed");
@@ -159,13 +165,15 @@ export default function Dashboard() {
         <div>Loading…</div>
       ) : (
         <div style={{ display: "flex", gap: 16 }}>
-          {currentUser && currentUser.roomate_group && currentUser.roomate_group !== -1 && (
-            <Leaderboard 
-              users={allUsers} 
-              tasks={allGroupTasks}
-              currentUser={currentUser}
-            />
-          )}
+          {currentUser &&
+            currentUser.roomate_group &&
+            currentUser.roomate_group !== -1 && (
+              <Leaderboard
+                users={allUsers}
+                tasks={allGroupTasks}
+                currentUser={currentUser}
+              />
+            )}
           <DndContext
             onDragEnd={handleDragEnd}
             collisionDetection={closestCorners}

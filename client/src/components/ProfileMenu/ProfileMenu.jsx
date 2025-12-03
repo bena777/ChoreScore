@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { generateAvatarUrl, isValidAvatarUrl, generateRandomColor, extractColorFromUrl, isGeneratedAvatar } from "../../utils/avatarUtils";
+import {
+  generateAvatarUrl,
+  isValidAvatarUrl,
+  generateRandomColor,
+  extractColorFromUrl,
+  isGeneratedAvatar,
+} from "../../utils/avatarUtils";
 import "./ProfileMenu.css";
+import { api } from "../../api";
 
 export default function ProfileMenu({ user, onUpdateProfile }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +25,6 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
     if (user) {
       setFirstName(user.first_name || "");
       setLastName(user.last_name || "");
-      
       // Determine if current avatar is custom or default
       if (user.avatar && isGeneratedAvatar(user.avatar)) {
         setAvatarType("default");
@@ -52,7 +58,10 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api("/api/logout", { method: "POST" });
+    } catch (e) {}
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("loggedInUser");
     setIsOpen(false);
@@ -62,14 +71,16 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
   const handleSaveProfile = async () => {
     if (onUpdateProfile) {
       let finalAvatar;
-      
+
       if (avatarType === "custom") {
         // Use custom URL if valid, otherwise fallback to default
         if (customUrl && isValidAvatarUrl(customUrl)) {
           finalAvatar = customUrl;
         } else {
-          // Invalid custom URL, require user to choose a color or valid URL
-          alert("Please enter a valid image URL, or switch to Default and pick a color.");
+          alert(
+            // Invalid custom URL, require user to choose a color or valid URL
+            "Please enter a valid image URL, or switch to Default and pick a color."
+          );
           return;
         }
       } else {
@@ -80,11 +91,11 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
         }
         finalAvatar = generateAvatarUrl(firstName, lastName, avatarColor);
       }
-      
-      await onUpdateProfile({ 
-        first_name: firstName, 
-        last_name: lastName, 
-        avatar: finalAvatar 
+
+      await onUpdateProfile({
+        first_name: firstName,
+        last_name: lastName,
+        avatar: finalAvatar,
       });
     }
     setShowEditModal(false);
@@ -96,18 +107,16 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
     if (user?.avatar && isValidAvatarUrl(user.avatar)) {
       return user.avatar;
     }
-    
     // Fallback: Generate from first/last name
     if (user?.first_name || user?.last_name) {
-      return generateAvatarUrl(user.first_name || '', user.last_name || '');
+      return generateAvatarUrl(user.first_name || "", user.last_name || "");
     }
-    
     // Last resort: Generate from username
     if (user?.username) {
       const parts = user.username.split(/[._-]/);
-      return generateAvatarUrl(parts[0] || 'U', parts[1] || 'ser');
+      return generateAvatarUrl(parts[0] || "U", parts[1] || "ser");
     }
-    
+
     return null;
   };
 
@@ -134,13 +143,17 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
 
   return (
     <div className="profile-menu" ref={menuRef}>
-      <button 
-        className="profile-avatar-btn" 
+      <button
+        className="profile-avatar-btn"
         onClick={() => setIsOpen(!isOpen)}
         title="Profile Menu"
       >
         {avatarToDisplay ? (
-          <img src={avatarToDisplay} alt="Profile" className="profile-avatar-img" />
+          <img
+            src={avatarToDisplay}
+            alt="Profile"
+            className="profile-avatar-img"
+          />
         ) : (
           <div className="profile-avatar-placeholder">{getInitials()}</div>
         )}
@@ -153,30 +166,34 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
               {avatarToDisplay ? (
                 <img src={avatarToDisplay} alt="Profile" />
               ) : (
-                <div className="profile-avatar-placeholder-large">{getInitials()}</div>
+                <div className="profile-avatar-placeholder-large">
+                  {getInitials()}
+                </div>
               )}
             </div>
             <div className="profile-dropdown-info">
               <div className="profile-dropdown-name">{getDisplayName()}</div>
               <div className="profile-dropdown-username">@{user.username}</div>
               {user.roomate_group && user.roomate_group !== -1 && (
-                <div className="profile-dropdown-group">Group: {user.roomate_group}</div>
+                <div className="profile-dropdown-group">
+                  Group: {user.roomate_group}
+                </div>
               )}
             </div>
           </div>
-          
+
           <div className="profile-dropdown-divider"></div>
-          
-          <button 
+
+          <button
             className="profile-dropdown-item"
             onClick={() => setShowEditModal(true)}
           >
             <span>✏️</span> Edit Profile
           </button>
-          
+
           <div className="profile-dropdown-divider"></div>
-          
-          <button 
+
+          <button
             className="profile-dropdown-item logout-item"
             onClick={handleLogout}
           >
@@ -185,15 +202,20 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
 
           <div className="profile-dropdown-divider"></div>
 
-          <button 
+          <button
             className="profile-dropdown-item logout-item"
             onClick={async () => {
-              const proceed = window.confirm("Delete your account? This cannot be undone.");
+              const proceed = window.confirm(
+                "Delete your account? This cannot be undone."
+              );
               if (!proceed) return;
               try {
                 const loggedInUsername = localStorage.getItem("loggedInUser");
                 if (!loggedInUsername) throw new Error("No logged-in user");
-                const res = await fetch(`/api/users/${encodeURIComponent(loggedInUsername)}`, { method: "DELETE" });
+                const res = await fetch(
+                  `/api/users/${encodeURIComponent(loggedInUsername)}`,
+                  { method: "DELETE" }
+                );
                 if (!res.ok) throw new Error("Failed to delete account");
                 localStorage.removeItem("loggedIn");
                 localStorage.removeItem("loggedInUser");
@@ -210,18 +232,21 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
       )}
 
       {showEditModal && (
-        <div className="profile-modal-overlay" onClick={() => setShowEditModal(false)}>
+        <div
+          className="profile-modal-overlay"
+          onClick={() => setShowEditModal(false)}
+        >
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
             <div className="profile-modal-header">
               <h2>Edit Profile</h2>
-              <button 
+              <button
                 className="profile-modal-close"
                 onClick={() => setShowEditModal(false)}
               >
                 ×
               </button>
             </div>
-            
+
             <div className="profile-modal-body">
               <div className="profile-form-group">
                 <label>First Name</label>
@@ -232,7 +257,7 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
                   placeholder="Enter first name"
                 />
               </div>
-              
+
               <div className="profile-form-group">
                 <label>Last Name</label>
                 <input
@@ -242,27 +267,31 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
                   placeholder="Enter last name"
                 />
               </div>
-              
+
               <div className="profile-form-group">
                 <label>Avatar Type</label>
                 <div className="avatar-type-toggle">
                   <button
                     type="button"
-                    className={`toggle-btn ${avatarType === "default" ? "active" : ""}`}
+                    className={`toggle-btn ${
+                      avatarType === "default" ? "active" : ""
+                    }`}
                     onClick={() => setAvatarType("default")}
                   >
                     Default
                   </button>
                   <button
                     type="button"
-                    className={`toggle-btn ${avatarType === "custom" ? "active" : ""}`}
+                    className={`toggle-btn ${
+                      avatarType === "custom" ? "active" : ""
+                    }`}
                     onClick={() => setAvatarType("custom")}
                   >
                     Custom
                   </button>
                 </div>
               </div>
-              
+
               {avatarType === "custom" ? (
                 <div className="profile-form-group">
                   <label>Custom Avatar URL</label>
@@ -272,7 +301,9 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
                     onChange={(e) => setCustomUrl(e.target.value)}
                     placeholder="https://example.com/avatar.jpg"
                   />
-                  <small style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                  <small
+                    style={{ color: "var(--text-muted)", fontSize: "12px" }}
+                  >
                     Enter a valid image URL for your custom avatar
                   </small>
                 </div>
@@ -287,53 +318,71 @@ export default function ProfileMenu({ user, onUpdateProfile }) {
                       title="Generate random color"
                       aria-label="Generate random color"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
                       </svg>
                     </button>
                     <input
                       type="text"
                       value={avatarColor}
-                      onChange={(e) => setAvatarColor(e.target.value.replace('#', ''))}
+                      onChange={(e) =>
+                        setAvatarColor(e.target.value.replace("#", ""))
+                      }
                       placeholder="e.g., ff5733"
                       maxLength="6"
                     />
                   </div>
-                  <small style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-                    Click the icon to generate a random color, or enter your own.
+                  <small
+                    style={{ color: "var(--text-muted)", fontSize: "12px" }}
+                  >
+                    Click the icon to generate a random color, or enter your
+                    own.
                   </small>
                 </div>
               )}
-              
+
               <div className="profile-avatar-preview">
-                {avatarType === "custom" && customUrl && isValidAvatarUrl(customUrl) ? (
-                  <img 
-                    src={customUrl} 
-                    alt="Custom Avatar" 
+                {avatarType === "custom" &&
+                customUrl &&
+                isValidAvatarUrl(customUrl) ? (
+                  <img
+                    src={customUrl}
+                    alt="Custom Avatar"
                     onError={(e) => {
-                      e.target.style.display = 'none';
-                    }} 
+                      e.target.style.display = "none";
+                    }}
                   />
                 ) : (
-                  <img 
-                    src={generateAvatarUrl(firstName, lastName, avatarColor || '888888')} 
+                  <img
+                    src={generateAvatarUrl(
+                      firstName,
+                      lastName,
+                      avatarColor || "888888"
+                    )}
                     alt="Default Avatar"
                   />
                 )}
               </div>
             </div>
-            
+
             <div className="profile-modal-footer">
-              <button 
+              <button
                 className="profile-btn-cancel"
                 onClick={() => setShowEditModal(false)}
               >
                 Cancel
               </button>
-              <button 
-                className="profile-btn-save"
-                onClick={handleSaveProfile}
-              >
+              <button className="profile-btn-save" onClick={handleSaveProfile}>
                 Save Changes
               </button>
             </div>
