@@ -262,7 +262,7 @@ router.put("/:id", async (req, res) => {
     }
 
     const taskOwnerId = existing.rows[0].student_id;
-    if (!isRa && taskOwnerId !== userId) {
+    if (!isRa && taskOwnerId && taskOwnerId !== userId) {
       return res.status(403).json({ message: "forbidden" });
     }
 
