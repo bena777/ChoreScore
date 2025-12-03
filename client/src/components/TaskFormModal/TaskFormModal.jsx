@@ -36,10 +36,13 @@ export const TaskFormModal = ({
     }
   }, [task, allUsers]);
 
-  // Filter users by same group_id as current user
-  const availableAssignees = allUsers.filter(
-    (u) => u.roomate_group && u.roomate_group === currentUserGroupId
-  );
+  // Filter users by same group_id as current user; if current user is in admin group -69, allow all users
+  const availableAssignees = Array.isArray(allUsers)
+    ? allUsers.filter((u) => {
+        if (currentUserGroupId === -69) return true;
+        return u.roomate_group && u.roomate_group === currentUserGroupId;
+      })
+    : [];
 
   const selectAssignee = (user) => {
     setSelectedAssignee(selectedAssignee?.id === user.id ? null : user);

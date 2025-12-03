@@ -1,8 +1,10 @@
 import "./Leaderboard.css";
 
 export const Leaderboard = ({ users, tasks, currentUser }) => {
-  // Calculate scores for each user in the group
-  const groupUsers = users.filter(u => u.roomate_group === currentUser?.roomate_group);
+  // Calculate scores for each user in the group. If current user is in admin group -69, include all users
+  const groupUsers = currentUser?.roomate_group === -69
+    ? users
+    : users.filter(u => u.roomate_group === currentUser?.roomate_group);
   
   const userScores = groupUsers.map(user => {
     // Sum up scores from all completed tasks assigned to this user
@@ -15,8 +17,8 @@ export const Leaderboard = ({ users, tasks, currentUser }) => {
     };
   });
 
-  // Sort by score descending
-  const sortedUsers = userScores.sort((a, b) => b.totalScore - a.totalScore);
+  // Sort by score descending (create new array to avoid mutating original)
+  const sortedUsers = [...userScores].sort((a, b) => b.totalScore - a.totalScore);
 
   return (
     <div className="leaderboard">
