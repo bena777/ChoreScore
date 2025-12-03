@@ -66,24 +66,28 @@ export const Column = ({
         {showCreateModal && (
           <div className="modal-overlay">
             <div className="modal">
-              <button className="modal-close" onClick={() => setShowCreateModal(false)}>
-                ×
-              </button>
-              <h2>Create Group</h2>
-              <label>Group Name:</label>
-              <input
-                type="text"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-                placeholder="Enter a group name"
-              />
-              <div style={{ marginTop: 12 }}>
-                Your unique group ID:
-                <div style={{ fontWeight: 600, marginTop: 6 }}>{generatedGroupId}</div>
+              <div className="modal-header">
+                <h2>Create Group</h2>
+                <button className="modal-close" onClick={() => setShowCreateModal(false)}>×</button>
               </div>
-              <div style={{ marginTop: 16 }}>
+              <form>
+                <label>Group Name</label>
+                <input
+                  type="text"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  placeholder="Enter a group name"
+                />
+                <div>
+                  Your unique group ID
+                  <div style={{ fontWeight: 600, marginTop: 6 }}>{generatedGroupId}</div>
+                </div>
+              </form>
+              <div className="modal-footer">
+                <button className="modal-btn-cancel" onClick={() => setShowCreateModal(false)}>Cancel</button>
                 <button
-                  style={{ background: "#2e7d32", color: "white", padding: "8px 12px", borderRadius: 6 }}
+                  className="modal-btn-submit"
+                  style={{ background: "#2e7d32" }}
                   onClick={() => {
                     setShowCreateModal(false);
                     window.location.reload();
@@ -99,20 +103,24 @@ export const Column = ({
         {showJoinModal && (
           <div className="modal-overlay">
             <div className="modal">
-              <button className="modal-close" onClick={() => setShowJoinModal(false)}>
-                ×
-              </button>
-              <h2>Join Group</h2>
-              <label>Paste Group ID:</label>
-              <input
-                type="text"
-                value={joinGroupId}
-                onChange={(e) => setJoinGroupId(e.target.value)}
-                placeholder="Enter the group ID"
-              />
-              <div style={{ marginTop: 16 }}>
+              <div className="modal-header">
+                <h2>Join Group</h2>
+                <button className="modal-close" onClick={() => setShowJoinModal(false)}>×</button>
+              </div>
+              <form>
+                <label>Paste Group ID</label>
+                <input
+                  type="text"
+                  value={joinGroupId}
+                  onChange={(e) => setJoinGroupId(e.target.value)}
+                  placeholder="Enter the group ID"
+                />
+              </form>
+              <div className="modal-footer">
+                <button className="modal-btn-cancel" onClick={() => setShowJoinModal(false)}>Cancel</button>
                 <button
-                  style={{ background: "#1565c0", color: "white", padding: "8px 12px", borderRadius: 6 }}
+                  className="modal-btn-submit"
+                  style={{ background: "#1565c0" }}
                   onClick={async () => {
                     try {
                       const username = localStorage.getItem("loggedInUser");

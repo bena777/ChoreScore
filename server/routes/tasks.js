@@ -103,7 +103,7 @@ router.get("/:id", async (req, res) => {
     
     // If user has special admin group (-69), return ALL tasks
     if (userGroup === -69) {
-      const { rows } = await pool.query(`
+      const result = await pool.query(`
         SELECT 
           t.*,
           s.first_name as assignee_first_name,
@@ -113,7 +113,7 @@ router.get("/:id", async (req, res) => {
         FROM users.tasks t
         LEFT JOIN users.students s ON t.student_id = s.id
       `);
-      const tasks = rows.map(row => {
+      const tasks = result.rows.map(row => {
         const task = mapTask(row);
         if (row.student_id) {
           task.assignee = {
@@ -131,22 +131,10 @@ router.get("/:id", async (req, res) => {
     }
 
     // If user is not in a group, return only their tasks
+    let rows;
     if (!userGroup || userGroup === -1) {
-      const result = await pool.query(
-        `
-        SELECT 
-          t.*,
-          s.first_name as assignee_first_name,
-          s.last_name as assignee_last_name,
-          s.username as assignee_username,
-          s.pfp_url as assignee_avatar
-        FROM users.tasks t
-        LEFT JOIN users.students s ON t.student_id = s.id
-        WHERE t.student_id = $1
-      `,
-        [requestedId]
-      );
-      rows = result.rows;
+      // Users not in a group see no tasks
+      rows = [];
     } else {
       const result = await pool.query(
         // Get all tasks for users in the same group

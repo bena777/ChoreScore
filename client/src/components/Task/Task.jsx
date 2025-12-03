@@ -70,7 +70,6 @@ export const Task = ({
         {formatDueDate(dueDate)}
         {dueDate && <FaCalendar size={16} style={{ color: 'inherit' }} />}
       </span>
-      <span className="task-score">{score}</span>
       <div className="task-buttons">
         <button
           className="edit-btn"
