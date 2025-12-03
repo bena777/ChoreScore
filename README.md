@@ -1,11 +1,16 @@
 ## ChoreScore
 *Created by: Benjamin Adelman, Haden Anderson, Mason Kolb, & Hudson Whitney*
 
-### Temp | For Devs:
+### Setup:
 
 Install dependencies:
 ```bash
 npm install
+cd client
+npm install
+cd ../server
+npm install
+cd ..
 ```
 Ensure you have the appropriate .env file with in the "server" directory
 
