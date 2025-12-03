@@ -6,7 +6,7 @@ export default function Home() {
     <div className="App" style={{ padding: 24 }}>
       <section style={{ maxWidth: 800, margin: "40px auto 24px" }}>
         <h2 style={{ marginBottom: 8 }}>
-          Roommate Responsibilities; Simplified
+          Roommate Responsibilities: Simplified
         </h2>
         <p style={{ lineHeight: 1.6 }}>
           ChoreScore is a light and easy-to-use web application which serves to
